@@ -25,8 +25,8 @@ import static akka.http.javadsl.server.PathMatchers.segment;
 
 class UserServer extends HttpApp {
 
-    final Timeout timeout = new Timeout(Duration.create(1, TimeUnit.MINUTES));
-    final Duration duration = Duration.create(1, TimeUnit.MINUTES);
+    final Timeout timeout = new Timeout(Duration.create(10, TimeUnit.SECONDS));
+    final Duration duration = Duration.create(10, TimeUnit.SECONDS);
     private final ActorRef userActor;
     private final ActorSystem system;
     private final ObjectMapper mapper = new ObjectMapper();
@@ -53,7 +53,7 @@ class UserServer extends HttpApp {
     private Route getUser(Long id) {
         return get(() -> withRequestTimeout(duration, () -> {
             CompletionStage<Optional<User>> user = PatternsCS.ask(userActor, new GetUserMessage(id), timeout)
-                    .thenCompose(o -> (CompletionStage<Optional<User>>) o);
+                    .thenApply(o -> (Optional<User>) o);
 
             return onSuccess(() -> user, performed -> {
                 if (performed.isPresent())

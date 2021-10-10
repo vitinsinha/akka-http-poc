@@ -4,6 +4,7 @@ import akka.actor.AbstractActor;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.japi.pf.FI;
+import akka.pattern.PatternsCS;
 import model.User;
 import model.messages.ActionPerformed;
 import model.messages.CreateUserMessage;
@@ -50,13 +51,13 @@ public class UserActor extends AbstractActor {
         return getUserMessage -> {
             CompletableFuture<Optional<User>> fut = CompletableFuture.supplyAsync(() -> {
                 try {
-                    Thread.sleep(TimeUnit.SECONDS.toMillis(40));
+                    Thread.sleep(TimeUnit.SECONDS.toMillis(5));
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
                 return userService.getUser(getUserMessage.getUserId());
             }, ec);
-            sender().tell(fut, getSelf());
+            PatternsCS.pipe(fut, getContext().dispatcher()).to(sender());
         };
     }
 
